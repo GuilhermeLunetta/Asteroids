@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Importando as bibliotecas necessárias.
+import random
 import pygame
 from os import path
 
@@ -69,6 +70,19 @@ class Mob(pygame.sprite.Sprite):
         meteoro_img = pygame.image.load(path.join(img_dir, "meteorBrown_med1.png")).convert()
         self.image = meteoro_img
         
+        #Deixando a imagem transparente
+        self.image.set_colorkey(BLACK)
+        
+        #Detalhe sobre posicionamento
+        self.rect = self.image.get_rect()
+        
+        #Randomiza posições do meteoro acima da tela
+        self.rect.x = random.randrange(0, WIDTH)
+        self.rect.y = random.randrange(10, 40)   
+        
+        #Velocidade em X e em Y
+        self.speedx = random.randrange(-3, 3)
+        self.speedy = random.randrange(2, 9)
         
         
         
@@ -92,10 +106,37 @@ background_rect = background.get_rect()
 
 #Chamando o player
 player = Player()
+mob1 = Mob()
+mob2 = Mob()
+mob3 = Mob()
+mob4 = Mob()
+mob5 = Mob()
+mob6 = Mob()
+mob7 = Mob()
+mob8 = Mob()
 
 #Cria um grupo de sprites e add nave
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
+all_sprites.add(mob1)
+all_sprites.add(mob2)
+all_sprites.add(mob3)
+all_sprites.add(mob4)
+all_sprites.add(mob5)
+all_sprites.add(mob6)
+all_sprites.add(mob7)
+all_sprites.add(mob8)
+
+#Cria um grupo mobs
+mobs = pygame.sprite.Group()
+mobs.add(mob1)
+mobs.add(mob2)
+mobs.add(mob3)
+mobs.add(mob4)
+mobs.add(mob5)
+mobs.add(mob6)
+mobs.add(mob7)
+mobs.add(mob8)
 
 # Comando para evitar travamentos.
 try:
