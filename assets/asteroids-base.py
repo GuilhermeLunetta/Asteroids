@@ -4,9 +4,13 @@
 import random
 import pygame
 from os import path
+import time
 
 # Estabelece a pasta que contem as figuras.
 img_dir = path.join(path.dirname(__file__), 'img')
+
+# Estabelece a pasta que contém as músicas
+snd_dir = path.join(path.dirname(__file__), 'snd')
 
 # Dados gerais do jogo.
 WIDTH = 480 # Largura da tela
@@ -49,6 +53,9 @@ class Player(pygame.sprite.Sprite):
         #Velocidade da nave
         self.speedx = 0
         
+        #Rario do círculo de colisão
+        self.radius = 25
+        
     #Método que atualiza a posição da nave    
     def update(self):
         self.rect.x += self.speedx
@@ -84,8 +91,24 @@ class Mob(pygame.sprite.Sprite):
         self.speedx = random.randrange(-3, 3)
         self.speedy = random.randrange(2, 9)
         
+        #Raio da colisão entre nave e meteoro
+        self.radius = int(self.rect.width * .85/2)
         
+class Bullet(pygame.sprite.Sprite):
+    
+    def __init__(self):
+        #Construindo a classe tiros
+        pygame.sprite.Sprite.__init__(self)
         
+        #Carregando a imagem do tiro
+        tiro_img = pygame.image.load(path.join(img_dir, 'laserRed16.png')).convert()
+        self.image = tiro_img
+        
+        #Deixando imagem transparente
+        self.image.set_colorkey(BLACK)
+        
+        #Velocidade Y (sobe)
+        self.speedy = -10
         
 # Inicialização do Pygame.
 pygame.init()
@@ -95,7 +118,7 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # Nome do jogo
-pygame.display.set_caption("Asteroids")
+pygame.display.set_caption("Asteroids by Luna")
 
 # Variável para o ajuste de velocidade
 clock = pygame.time.Clock()
@@ -103,6 +126,13 @@ clock = pygame.time.Clock()
 # Carrega o fundo do jogo
 background = pygame.image.load(path.join(img_dir, 'starfield.png')).convert()
 background_rect = background.get_rect()
+
+#Carrega os sons do jogo
+pygame.mixer.music.load(path.join(snd_dir, 'tgfcoder-FrozenJam-SeamlessLoop.ogg'))
+pygame.mixer.music.set_volume(0.4)
+boom_sound = pygame.mixer.Sound(path.join(snd_dir, 'expl3.wav'))
+destruction_sound = pygame.mixer.Sound(path.join(snd_dir, 'expl6.wav'))
+pew_sound = pygame.mixer.Sound(path.join(snd_dir, 'pew.wav'))
 
 #Chamando o player
 player = Player()
@@ -114,6 +144,7 @@ mob5 = Mob()
 mob6 = Mob()
 mob7 = Mob()
 mob8 = Mob()
+tiro = Bullet()
 
 #Cria um grupo de sprites e add nave
 all_sprites = pygame.sprite.Group()
@@ -126,6 +157,7 @@ all_sprites.add(mob5)
 all_sprites.add(mob6)
 all_sprites.add(mob7)
 all_sprites.add(mob8)
+all_sprites.add(tiro)
 
 #Cria um grupo mobs
 mobs = pygame.sprite.Group()
@@ -138,10 +170,14 @@ mobs.add(mob6)
 mobs.add(mob7)
 mobs.add(mob8)
 
+bullets = pygame.sprite.Group()
+bullets.add(tiro)
+
 # Comando para evitar travamentos.
 try:
     
     # Loop principal.
+    pygame.mixer.music.play(loops=-1)
     running = True
     while running:
         
@@ -162,7 +198,7 @@ try:
                     player.speedx = -8
                 if event.key == pygame.K_RIGHT:
                     player.speedx = 8
-                    
+
             #Verifica se soltou alguma tecla
             if event.type == pygame.KEYUP:
                 #Dependendo da tecla altera a velocidade
@@ -170,9 +206,25 @@ try:
                     player.speedx = 0
                 if event.key == pygame.K_RIGHT:
                     player.sppedx = 0
+                 
         #Depois de processar os eventos
         #Atualiza a ação de cada sprite
         all_sprites.update()
+        
+        #Verifica se houve colisão entre nave e meteoro
+        hits = pygame.sprite.spritecollide(player, mobs, False, pygame.sprite.collide_circle)
+        if hits:
+            #Toca o som da colisão
+            boom_sound.play()
+            time.sleep(1)
+            
+            running = False
+        
+        hitsbulletsmobs = pygame.sprite.spritecollide(bullets, mobs, True, pygame.sprite.collide_circle)
+        if hitsbulletsmobs:
+            #Toca som de explosão
+            destruction_sound.play()
+            
         
     
         # A cada loop, redesenha o fundo e os sprites
