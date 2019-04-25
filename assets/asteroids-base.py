@@ -20,6 +20,16 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 
+#Classe que representa a nave
+class Nave(pygame.sprite.Sprite):
+    
+    #Construindo a classe
+    def __init__(self):
+        #Construindo a classe principal
+        pygame.sprite.Sprite.__init__(self)
+        
+        #Carregando a imagem de fundo
+        nave_img = pygame.image.load(path.join(img_dir, "))
 # Inicialização do Pygame.
 pygame.init()
 pygame.mixer.init()
