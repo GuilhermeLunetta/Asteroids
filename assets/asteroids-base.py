@@ -134,20 +134,73 @@ class Bullet(pygame.sprite.Sprite):
         #Se o tiro passar do início da tela, morre
         if self.rect.bottom < 0:
             self.kill()
+class Explosion(pygame.sprite.Sprite):
+    
+    #Classe que representa a explosao
+    def __init__(self, center, explosion_anim):
+        #Construtor da classe
+        pygame.sprite.Sprite.__init__(self)
+        
+        #Carrega a animacao
+        self.explosion_anim = explosion_anim
+        
+        #Inicia o processo de animacao colocando a primeira imagem na tela
+        self.frame = 0
+        self.image = self.explosion_anim[self.frame]
+        self.rect = self.image.get_rect()
+        self.rect.center = center
+        
+        #guarda o tick da primeira imagem
+        self.last_update = pygame.time.get_ticks()
+        
+        #Controle de ticks da animacao
+        self.frame_ticks = 50
+    
+    def update(self):
+        #Verifica o tick atual
+        now = pygame.time.get_ticks()
+        
+        #Verifica quantos ticks se passaram desde a ultima mudança de frame
+        elapsed_ticks = now - self.last_update
+        
+        #Se ja esta na hora de mudar a imagem
+        if elapsed_ticks > self.frame_ticks:
+            
+            #Marca o tick da nova imagem
+            self.last_update = now
+            
+            #avança um quadro
+            self.frame += 1
+            
+            #Verifica se ja chegou no final da animacao
+            if self.frame == len(self.explosion_anim):
+                #se sim, tchau!
+                self.kill()
+            else:
+                #Se ainda nao, troca imagem
+                center = self.rect.center
+                self.image = self.explosion_anim[self.frame]
+                self.rect = self.image.get_rect()
+                self.rect.center = center
+
 
 def load_assets(img_dir, snd_dir):
     assets = {}
     assets['player_img'] = pygame.image.load(path.join(img_dir, 'playerShip1_orange.png')).convert()
-    assets['mob_img'] = pygame.image.load(path.join(img_dir, 'meteroBrown_med1.png')).convert()
+    assets['mob_img'] = pygame.image.load(path.join(img_dir, 'meteorBrown_med1.png')).convert()
     assets['bullet_img'] = pygame.image.load(path.join(img_dir, 'laserRed16.png')).convert()
     assets['background'] = pygame.image.load(path.join(img_dir, 'starfield.png')).convert()
-    assets['boom_sound'] = pygame.mixer.Sound(path.join(img_dir, 'expl3.wav')).convert()
-    assets['destruction_sound'] = pygame.mixer.Sound(path.join(img_dir, 'expl6.wav')).convert()
-    assets['pew_sound'] = pygame.mixer.Sound(path.join(img_dir, 'pew.wav')).convert()
+    assets['boom_sound'] = pygame.mixer.Sound(path.join(snd_dir, 'expl3.wav'))
+    assets['destruction_sound'] = pygame.mixer.Sound(path.join(snd_dir, 'expl6.wav'))
+    assets['pew_sound'] = pygame.mixer.Sound(path.join(snd_dir, 'pew.wav'))
     explosion_anim = []
     for i in range(9):
         filename = 'regularExplosion0{}.png'.format(i)
-        img = pygame.image.load(path.join(img_dir, filename))
+        img = pygame.image.load(path.join(img_dir, filename)).convert()
+        img = pygame.transform.scale(img, (32, 32))
+        img.set_colorkey(BLACK)
+        explosion_anim.append(img)
+    assets['explosion_anim'] = explosion_anim
     return assets
     
 # Inicialização do Pygame.
@@ -174,7 +227,7 @@ background_rect = background.get_rect()
 pygame.mixer.music.load(path.join(snd_dir, 'tgfcoder-FrozenJam-SeamlessLoop.ogg'))
 pygame.mixer.music.set_volume(0.4)
 boom_sound = assets['boom_sound']
-destruction_sound = ['destruction_sound']
+destruction_sound = assets['destruction_sound']
 pew_sound = assets['pew_sound']
 
 #Chamando o player
@@ -216,11 +269,11 @@ try:
             if event.type == pygame.KEYDOWN:
                 #Dependendo da tecla altera velocidade
                 if event.key == pygame.K_LEFT:
-                    player.speedx = -8
+                    player.speedx -= 8
                 if event.key == pygame.K_RIGHT:
-                    player.speedx = 8
+                    player.speedx += 8
                 if event.key == pygame.K_SPACE:
-                    bullet = Bullet(assets['bullet_img'], player.rect.centerx, player.rect.top)
+                    bullet = Bullet(player.rect.centerx, player.rect.top, assets['bullet_img'])
                     all_sprites.add(bullet)
                     bullets.add(bullet)
                     pew_sound.play()
@@ -229,9 +282,9 @@ try:
             if event.type == pygame.KEYUP:
                 #Dependendo da tecla altera a velocidade
                 if event.key == pygame.K_LEFT:
-                    player.speedx = 0
+                    player.speedx += 8
                 if event.key == pygame.K_RIGHT:
-                    player.sppedx = 0
+                    player.speedx -= 8
                  
         #Depois de processar os eventos
         #Atualiza a ação de cada sprite
@@ -249,11 +302,15 @@ try:
         hits = pygame.sprite.groupcollide(mobs, bullets, True, True)
         #Recriando os meteoros
         for hit in hits:
-            m = Mob()
+            m = Mob(assets['mob_img'])
             all_sprites.add(m)
             mobs.add(m)
             #Toca som de explosão
             destruction_sound.play()
+            
+            #no lugar do meteoro antigo, adicionar explosao
+            explosao = Explosion(hit.rect.center, assets['explosion_anim'])
+            all_sprites.add(explosao)
             
         # A cada loop, redesenha o fundo e os sprites
         screen.fill(BLACK)
