@@ -320,4 +320,4 @@ def game_screen(screen, assets):
         
         # Depois de desenhar tudo, inverte o display.
         pygame.display.flip()
-        return QUIT
+    return QUIT

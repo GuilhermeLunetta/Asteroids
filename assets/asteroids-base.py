@@ -26,6 +26,7 @@ def load_assets(img_dir, snd_dir, fnt_dir):
         explosion_anim.append(img)
     assets['explosion_anim'] = explosion_anim
     assets['score_font'] = pygame.font.Font(path.join(fnt_dir, 'PressStart2P.ttf'), 28)
+    assets['inicio'] = pygame.image.load(path.join(img_dir, 'inicio.png')).convert()
     return assets
 
 # Inicialização do Pygame.

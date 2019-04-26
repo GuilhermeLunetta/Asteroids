@@ -16,8 +16,8 @@ def init_screen(screen, assets):
     clock = pygame.time.Clock()
     
     # Carrega o fundo do jogo
-    background = assets['background']
-    background_rect = background.get_rect()
+    inicio = assets['inicio']
+    inicio_rect = inicio.get_rect()
     
     running = True
     while running:
@@ -36,7 +36,7 @@ def init_screen(screen, assets):
         
         #A cada loop, redesenha o fundo
         screen.fill(BLACK)
-        screen.blit(background, background_rect)
+        screen.blit(inicio, inicio_rect)
         
         #Depois de desenhar inverte o display
         pygame.display.flip()
