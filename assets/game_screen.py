@@ -315,7 +315,7 @@ def game_screen(screen, assets):
         #Desenhando as vidas
         text_surface = score_font.render(chr(9829) * lifes, True, RED)
         text_rect = text_surface.get_rect()
-        text_rect.bottomleft = (10, WIDTH - 10)
+        text_rect.bottomleft = (10, HEIGHT - 10)
         screen.blit(text_surface, text_rect)
         
         # Depois de desenhar tudo, inverte o display.
